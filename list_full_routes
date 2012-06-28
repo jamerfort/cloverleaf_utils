@@ -1,0 +1,38 @@
+#!/bin/ksh
+
+if echo "_____ $1 _____" | grep -q -e '-h' -e '--help' -e '-?' -e '/?' -e '\\?'
+then
+	# show the usage
+	echo "Usage: $0 <options>"
+	echo "Options:"
+
+	# get the comments from the TCL file
+	grep "#@" $HCIROOT/usercmds/tcl/list_full_routes.tcl |
+
+	# remove the leading spaces
+	sed 's/^.*#@/@/g' |
+
+	# space the arguments
+	sed '
+		/@usage/{
+			x
+			/NEWLINE/{
+				s/^.*$//
+				p
+			}
+			x
+		}
+
+		/@description/{
+			x
+			s/^.*$/NEWLINE/
+			x
+		}
+	' |
+	
+	# replace the @usage and @description
+	sed 's/@usage/   /g; s/@description/      /g'
+else
+	hcitcl $HCIROOT/usercmds/tcl/list_full_routes.tcl "$@"
+fi
+
